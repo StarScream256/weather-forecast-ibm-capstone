@@ -1,0 +1,806 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SkyPulse — style.css
+   Dark Glassmorphism · Liquid Glass Cards · Mobile-first · Flexbox + CSS Grid
+   No external libraries or frameworks
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Custom Properties ─────────────────────────────────────────── */
+:root {
+  /* Base palette */
+  --bg-base:        #0F172A;
+  --bg-mid:         #111827;
+  --glass-bg:       rgba(255, 255, 255, 0.05);
+  --glass-border:   rgba(255, 255, 255, 0.10);
+  --glass-hover:    rgba(255, 255, 255, 0.08);
+  --accent:         #38BDF8;
+  --accent-dim:     rgba(56, 189, 248, 0.18);
+  --accent-glow:    rgba(56, 189, 248, 0.30);
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted:     #64748B;
+  --error-color:    #F87171;
+  --error-bg:       rgba(248, 113, 113, 0.12);
+  --success:        #4ADE80;
+
+  /* Spacing scale */
+  --gap-xs:  0.4rem;
+  --gap-sm:  0.75rem;
+  --gap-md:  1.25rem;
+  --gap-lg:  2rem;
+  --gap-xl:  3rem;
+
+  /* Radius */
+  --r-sm:  0.5rem;
+  --r-md:  1rem;
+  --r-lg:  1.5rem;
+  --r-xl:  2rem;
+
+  /* Transitions */
+  --t-fast:   0.15s ease;
+  --t-normal: 0.3s ease;
+  --t-slow:   0.6s ease;
+
+  /* Dynamic theme tint — overridden by JS on each weather load.
+     Used by liquid-glass inner-highlight and body gradient. */
+  --theme-tint:       rgba(56, 189, 248, 0.22);   /* default: sky blue  */
+  --theme-tint-soft:  rgba(56, 189, 248, 0.08);
+  --theme-tint-hard:  rgba(56, 189, 248, 0.45);
+}
+
+/* ── Dynamic Weather Background Gradients ────────────────────────
+   Each theme sets a rich multi-layer background on <body>:
+     Layer 1 (top)    : primary radial glow burst at top-center
+     Layer 2 (bottom) : secondary counterpoint glow at bottom edge
+     Layer 3 (base)   : solid deep navy foundation
+   JS also injects --theme-tint custom properties for card highlights.
+─────────────────────────────────────────────────────────────────── */
+
+/* Sunny / Clear — warm golden-amber crown, deep sapphire base */
+.theme-clear {
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -5%,  rgba(251,191,36,0.28)  0%, rgba(234,88,12,0.12)  45%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(56,189,248,0.16)  0%, transparent 60%),
+    linear-gradient(175deg, #0c1a38 0%, #0F172A 45%, #091020 100%);
+}
+
+/* Rainy / Thunderstorm — cool slate, deep indigo, oceanic dark blue */
+.theme-rainy,
+.theme-stormy {
+  background-image:
+    radial-gradient(ellipse 85% 50% at 50% -8%,  rgba(99,102,241,0.30)  0%, rgba(30,58,138,0.18)  50%, transparent 72%),
+    radial-gradient(ellipse 55% 35% at 15% 105%, rgba(14,165,233,0.14)  0%, transparent 55%),
+    linear-gradient(175deg, #050d1f 0%, #0a1128 50%, #0F172A 100%);
+}
+
+/* Cloudy / Overcast — soft neutral dark-grey, deep teal atmospheric */
+.theme-cloudy {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -5%,  rgba(100,116,139,0.28) 0%, rgba(15,118,110,0.10) 50%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 85% 108%, rgba(51,65,85,0.20)    0%, transparent 55%),
+    linear-gradient(175deg, #0a1520 0%, #0F172A 50%, #0b1623 100%);
+}
+
+/* Snowy — pale arctic blue, icy glimmer */
+.theme-snowy {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -5%,  rgba(186,230,253,0.22) 0%, rgba(56,189,248,0.10) 55%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 20% 110%, rgba(147,197,253,0.12) 0%, transparent 55%),
+    linear-gradient(175deg, #091828 0%, #0F172A 50%, #0d1e2e 100%);
+}
+
+/* Night — deep midnight blue, cosmic purple ambient */
+.theme-night {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -5%,  rgba(109,40,217,0.26)  0%, rgba(30,27,75,0.20)   50%, transparent 70%),
+    radial-gradient(ellipse 45% 30% at 90% 108%, rgba(139,92,246,0.14)  0%, transparent 55%),
+    linear-gradient(175deg, #07051a 0%, #0d0b2b 40%, #0F172A 100%);
+}
+
+/* ── Global Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  /* background-color is the fallback; background-image is set by .theme-* classes */
+  background-color: var(--bg-base);
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  /* Smooth cross-fade when weather condition changes */
+  transition: background-image 0.8s ease, background-color var(--t-slow);
+  overflow-x: hidden;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+/* ── Liquid Glass Base ──────────────────────────────────────────
+   Base class shared by all cards.
+   Liquid Glass = layered backdrop-filter + semi-transparent gradient
+   border + inner highlight + subtle outer glow.
+─────────────────────────────────────────────────────────────────── */
+.glass-card {
+  position: relative;
+  /* Translucent frosted fill */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.03) 60%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  /* Primary blur layer */
+  backdrop-filter: blur(18px) saturate(180%) brightness(1.06);
+  -webkit-backdrop-filter: blur(18px) saturate(180%) brightness(1.06);
+  /* Semi-transparent gradient border */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-lg);
+  /* Outer ambient glow + inner top-edge highlight */
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.06) inset,
+    0 1px 0   0    rgba(255, 255, 255, 0.14) inset,   /* top highlight rim */
+    0 8px 32px     rgba(0, 0, 0, 0.28),
+    0 2px  8px     rgba(0, 0, 0, 0.18);
+  transition:
+    border-color  var(--t-normal),
+    box-shadow    var(--t-normal),
+    background    var(--t-normal),
+    transform     var(--t-normal);
+  overflow: hidden;
+}
+
+/* Reflective sheen — pseudo-element top-edge gloss streak */
+.glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* Subtle top-down gloss gradient mimicking light reflection */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.00) 40%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity var(--t-normal);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.10) inset,
+    0 1px 0   0    rgba(255, 255, 255, 0.22) inset,
+    0 0  24px      var(--theme-tint-soft),
+    0 12px 40px    rgba(0, 0, 0, 0.35),
+    0  4px 12px    rgba(0, 0, 0, 0.22);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.04) 60%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+}
+
+/* Ensure card children sit above the ::after sheen */
+.glass-card > * { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOP NAVIGATION
+═══════════════════════════════════════════════════════════════════ */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--gap-sm) var(--gap-md);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  flex-wrap: wrap;
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  flex-shrink: 0;
+}
+.brand-icon {
+  width: 32px; height: 32px;
+}
+.brand-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+/* Search */
+.search-wrapper {
+  flex: 1;
+  min-width: 200px;
+  max-width: 460px;
+  position: relative;
+}
+.search-field {
+  display: flex;
+  align-items: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  overflow: visible;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.search-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.55rem var(--gap-md);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  caret-color: var(--accent);
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+.search-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--t-fast);
+  border-radius: 0 var(--r-xl) var(--r-xl) 0;
+}
+.search-btn svg { width: 18px; height: 18px; }
+.search-btn:hover { color: var(--accent); }
+.search-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-xl);
+}
+
+/* Suggestions dropdown */
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: #1E293B;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  list-style: none;
+  overflow: hidden;
+  z-index: 200;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+}
+.suggestions-list[hidden] { display: none; }
+.suggestion-item {
+  padding: 0.65rem var(--gap-md);
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.suggestion-item:hover,
+.suggestion-item[aria-selected="true"] {
+  background: var(--accent-dim);
+  color: var(--text-primary);
+}
+.suggestion-item .sug-country {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: 0.4rem;
+}
+
+/* Unit toggle */
+.unit-toggle {
+  display: flex;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.unit-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.unit-btn.active {
+  background: var(--accent);
+  color: #0F172A;
+  border-radius: var(--r-xl);
+}
+.unit-btn:not(.active):hover { color: var(--text-primary); }
+.unit-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MAIN CONTENT LAYOUT
+═══════════════════════════════════════════════════════════════════ */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--gap-lg) var(--gap-md) var(--gap-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}
+
+/* ── Loading Overlay ────────────────────────────────────────────── */
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-md);
+  padding: var(--gap-xl);
+}
+.loading-overlay[hidden] { display: none; }
+
+.spinner {
+  width: 48px; height: 48px;
+  border: 3px solid var(--glass-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loading-text {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ── Error Banner ────────────────────────────────────────────────── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  background: var(--error-bg);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: var(--r-md);
+  padding: var(--gap-sm) var(--gap-md);
+  color: var(--error-color);
+  font-size: 0.95rem;
+}
+.error-banner[hidden] { display: none; }
+.error-icon { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO CARD — Enhanced Liquid Glass
+   Deeper blur (24px), stronger inner highlight, dynamic tint wash
+═══════════════════════════════════════════════════════════════════ */
+.hero-card {
+  padding: var(--gap-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  /* Override base glass with a deeper hero-specific blur */
+  backdrop-filter: blur(24px) saturate(200%) brightness(1.08);
+  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(1.08);
+  /* Richer frosted fill with a subtle warm-cool gradient tint */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.09) 0%,
+    rgba(255, 255, 255, 0.04) 55%,
+    rgba(255, 255, 255, 0.07) 100%
+  );
+  /* Stronger inner glow using theme tint */
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.08) inset,
+    0 1px 0   0    rgba(255, 255, 255, 0.20) inset,
+    0 0  40px      var(--theme-tint),               /* ambient theme wash */
+    0 16px 48px    rgba(0, 0, 0, 0.38),
+    0  4px 16px    rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-xl);
+  transition:
+    box-shadow  var(--t-slow),
+    border-color var(--t-slow),
+    background   var(--t-slow);
+}
+
+/* Dynamic tint corner wash — uses --theme-tint injected by JS */
+.hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Blend the global accent dim with the per-theme tint */
+  background:
+    radial-gradient(ellipse 65% 75% at 0%   0%,   var(--theme-tint)      0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 100% 100%, var(--theme-tint-soft) 0%, transparent 55%);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+  transition: background var(--t-slow);
+}
+
+.hero-left {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.city-name {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.city-date {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.temp-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  flex-wrap: wrap;
+  margin-top: var(--gap-xs);
+}
+
+.current-temp {
+  font-size: clamp(3.5rem, 9vw, 5.5rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.condition-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.weather-icon-hero svg {
+  width: 60px; height: 60px;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.condition-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.feels-humidity {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+  margin-top: var(--gap-xs);
+}
+.dot-sep { color: var(--text-muted); }
+
+/* Decorative right-side art placeholder */
+.hero-right {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: clamp(120px, 20vw, 200px);
+  height: clamp(120px, 18vw, 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+.hero-right svg {
+  width: 100%; height: 100%;
+  filter: drop-shadow(0 0 24px var(--accent-glow));
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   KPI GRID
+═══════════════════════════════════════════════════════════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gap-md);
+}
+
+/* KPI Cards — Liquid Glass with per-theme tint highlight */
+.kpi-card {
+  padding: var(--gap-md);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  /* Slightly deeper blur than base glass-card */
+  backdrop-filter: blur(20px) saturate(190%) brightness(1.07);
+  -webkit-backdrop-filter: blur(20px) saturate(190%) brightness(1.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.07) inset,
+    0 1px 0   0    rgba(255, 255, 255, 0.16) inset,
+    0  6px 24px    rgba(0, 0, 0, 0.26),
+    0  2px  8px    rgba(0, 0, 0, 0.16);
+  transition:
+    transform     var(--t-normal),
+    box-shadow    var(--t-normal),
+    border-color  var(--t-normal),
+    background    var(--t-normal);
+}
+.kpi-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.10) inset,
+    0 1px 0   0    rgba(255, 255, 255, 0.22) inset,
+    0 0  20px      var(--theme-tint-soft),
+    0 12px 36px    rgba(0, 0, 0, 0.35),
+    0  4px 12px    rgba(0, 0, 0, 0.20);
+}
+
+.kpi-icon {
+  width: 48px; height: 48px;
+  background: var(--accent-dim);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.kpi-icon svg { width: 26px; height: 26px; }
+
+.kpi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kpi-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+}
+.kpi-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+.kpi-unit {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   7-DAY FORECAST
+═══════════════════════════════════════════════════════════════════ */
+.forecast-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+.section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--gap-sm);
+}
+
+.forecast-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  padding: var(--gap-sm) var(--gap-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+  transition: border-color var(--t-normal), background var(--t-normal), transform var(--t-normal);
+  cursor: default;
+}
+.forecast-card:hover {
+  border-color: rgba(56,189,248,0.35);
+  background: var(--glass-hover);
+  transform: translateY(-4px);
+}
+.forecast-card.today {
+  border-color: rgba(56,189,248,0.45);
+  background: rgba(56,189,248,0.08);
+}
+
+.fc-day {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.forecast-card.today .fc-day { color: var(--accent); }
+
+.fc-icon svg {
+  width: 34px; height: 34px;
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+.fc-max {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.fc-min {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════════════ */
+.app-footer {
+  text-align: center;
+  padding: var(--gap-md);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--glass-border);
+}
+
+/* Program attribution line — visually subordinate, separated by a faint rule */
+.footer-attribution {
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+}
+.footer-attribution strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET
+═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .forecast-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .nav-inner {
+    gap: var(--gap-sm);
+  }
+  .brand-name {
+    display: none; /* icon alone at tiny widths */
+  }
+  .search-wrapper {
+    min-width: 0;
+  }
+
+  .hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--gap-md);
+  }
+  .hero-right {
+    width: 110px; height: 110px;
+    align-self: flex-end;
+    position: absolute;
+    right: var(--gap-md);
+    top: var(--gap-md);
+    opacity: 0.5;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .forecast-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SKELETON LOADING STATES
+═══════════════════════════════════════════════════════════════════ */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.75; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite;
+  border-radius: var(--r-sm);
+  color: transparent !important;
+  pointer-events: none;
+}
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Focus Visible (WCAG AA) ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

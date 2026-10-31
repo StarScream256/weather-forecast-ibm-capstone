@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SkyPulse – Live Weather & Climate Analytics Dashboard powered by Open-Meteo" />
+  <title>SkyPulse – Live Weather Analytics</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="theme-clear" id="app-body">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOP NAVIGATION & SEARCH BAR
+  ════════════════════════════════════════════════════════════ -->
+  <header class="nav-bar" role="banner">
+    <div class="nav-inner">
+
+      <!-- Brand -->
+      <div class="brand" aria-label="SkyPulse brand">
+        <!-- Inline SVG logo mark: stylised pulse wave -->
+        <svg class="brand-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true" focusable="false">
+          <circle cx="18" cy="18" r="17" stroke="#38BDF8" stroke-width="2"/>
+          <polyline points="4,18 9,18 12,10 16,26 20,14 23,22 27,18 32,18"
+                    stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="brand-name">SkyPulse</span>
+      </div>
+
+      <!-- Search -->
+      <div class="search-wrapper" role="search">
+        <label for="city-input" class="sr-only">Search city</label>
+        <div class="search-field">
+          <input
+            type="text"
+            id="city-input"
+            class="search-input"
+            placeholder="Search city…"
+            autocomplete="off"
+            aria-label="Search for a city"
+            aria-autocomplete="list"
+            aria-controls="suggestions-list"
+            aria-expanded="false"
+          />
+          <button class="search-btn" id="search-btn" aria-label="Submit city search">
+            <!-- Inline SVG: magnifier -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Auto-suggest dropdown -->
+        <ul
+          id="suggestions-list"
+          class="suggestions-list"
+          role="listbox"
+          aria-label="City suggestions"
+          hidden
+        ></ul>
+      </div>
+
+      <!-- Unit toggle -->
+      <div class="unit-toggle" role="group" aria-label="Temperature unit switcher">
+        <button class="unit-btn active" id="btn-celsius" aria-pressed="true" aria-label="Switch to Celsius">°C</button>
+        <button class="unit-btn" id="btn-fahrenheit" aria-pressed="false" aria-label="Switch to Fahrenheit">°F</button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════════════════════════ -->
+  <main id="main-content" class="main-content" role="main">
+
+    <!-- Loading Skeleton -->
+    <div id="loading-overlay" class="loading-overlay" aria-live="polite" aria-label="Loading weather data" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <p class="loading-text">Fetching weather data…</p>
+    </div>
+
+    <!-- Error Banner -->
+    <div id="error-banner" class="error-banner" role="alert" aria-live="assertive" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" class="error-icon" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="error-message">Something went wrong.</span>
+    </div>
+
+    <!-- ── Hero Card ───────────────────────────────────────── -->
+    <section id="hero-card" class="hero-card glass-card" aria-label="Current weather">
+      <div class="hero-left">
+        <h1 class="city-name" id="city-name">—</h1>
+        <p class="city-date" id="city-date">—</p>
+        <div class="temp-row">
+          <span class="current-temp" id="current-temp">—</span>
+          <div class="condition-block">
+            <div id="weather-icon-hero" class="weather-icon-hero" aria-hidden="true"></div>
+            <span class="condition-text" id="condition-text">—</span>
+          </div>
+        </div>
+        <div class="feels-humidity">
+          <span id="feels-like">Feels like —</span>
+          <span class="dot-sep" aria-hidden="true">·</span>
+          <span id="humidity-text">Humidity —</span>
+        </div>
+      </div>
+      <div class="hero-right" id="hero-bg-art" aria-hidden="true"></div>
+    </section>
+
+    <!-- ── KPI Metrics Grid ────────────────────────────────── -->
+    <section class="kpi-grid" aria-label="Key weather metrics">
+      <article class="kpi-card glass-card" aria-label="Wind speed">
+        <div class="kpi-icon" id="icon-wind" aria-hidden="true"></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Wind Speed</span>
+          <span class="kpi-value" id="wind-speed">—</span>
+          <span class="kpi-unit">km/h</span>
+        </div>
+      </article>
+      <article class="kpi-card glass-card" aria-label="UV Index and pressure">
+        <div class="kpi-icon" id="icon-uv" aria-hidden="true"></div>
+        <div class="kpi-body">
+          <span class="kpi-label">UV Index</span>
+          <span class="kpi-value" id="uv-index">—</span>
+          <span class="kpi-unit" id="pressure-text">Pressure —</span>
+        </div>
+      </article>
+      <article class="kpi-card glass-card" aria-label="Precipitation probability">
+        <div class="kpi-icon" id="icon-precip" aria-hidden="true"></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Precipitation</span>
+          <span class="kpi-value" id="precip-prob">—</span>
+          <span class="kpi-unit">% chance</span>
+        </div>
+      </article>
+      <article class="kpi-card glass-card" aria-label="Visibility">
+        <div class="kpi-icon" id="icon-vis" aria-hidden="true"></div>
+        <div class="kpi-body">
+          <span class="kpi-label">Visibility</span>
+          <span class="kpi-value" id="visibility">—</span>
+          <span class="kpi-unit">km</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- ── 7-Day Forecast ─────────────────────────────────── -->
+    <section class="forecast-section" aria-label="7-day forecast">
+      <h2 class="section-title">7-Day Forecast</h2>
+      <div class="forecast-grid" id="forecast-grid" role="list"></div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════════════════════ -->
+  <footer class="app-footer" role="contentinfo">
+    <p>Powered by <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo</a> · SkyPulse © 2025</p>
+    <p class="footer-attribution">
+      Built for <strong>IBM Skillsbuild University Education × Hacktiv8</strong> | IT — AI Agent for Programming
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
