@@ -138,6 +138,8 @@ A pill-style toggle in the navigation bar instantly re-renders all temperature v
 
 > Open `index.html` in your browser to see the live dashboard.
 
+![Home Page Screenshot](assets/homepage.png)
+
 **Default view — Jakarta, Clear Sky (daytime)**
 - Hero card displays golden-amber liquid glass glow
 - Background shows warm amber crown gradient
